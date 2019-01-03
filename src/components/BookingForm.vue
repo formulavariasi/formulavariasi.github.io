@@ -186,6 +186,7 @@ export default {
             })
         }
         this.isPriceLoading = false
+        console.log(this.form)
     }
   }
 }
