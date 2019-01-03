@@ -100,8 +100,8 @@
                                         </div>
                                     </div>
                                     <div class="field has-text-centered">
-                                        <button v-if="isPriceLoading" class="button is-loading is-success"><h5 class="title is-5 price-loading">Rp {{ formatPrice(0) }}</h5></button>
-                                        <button v-else class="button is-hovered is-success"><h5 class="title is-5 price">Rp {{ formatPrice(form.price) }}</h5></button>
+                                        <span v-if="isPriceLoading" class="button is-loading is-success"><h5 class="title is-5 price-loading">Rp {{ formatPrice(0) }}</h5></span>
+                                        <span v-else class="button is-hovered is-success"><h5 class="title is-5 price">Rp {{ formatPrice(form.price) }}</h5></span>
                                     </div>
                                     <!-- submit button -->
                                     <div class="field has-text-right">
