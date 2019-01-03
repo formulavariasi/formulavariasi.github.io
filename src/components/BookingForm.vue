@@ -178,7 +178,7 @@ export default {
             .then((response) => {
                 // handle success
                 console.log(response)
-                this.form.price = response.data[0].package_price
+                this.form.price = parseInt(response.data[0].package_price, 10)
             })
             .catch((error) => {
                 // handle error
@@ -186,7 +186,7 @@ export default {
             })
         }
         this.isPriceLoading = false
-        console.log(this.form)
+        console.log(this.form.price)
     }
   }
 }
