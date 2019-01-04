@@ -53,7 +53,7 @@
                                         <div class="control">
                                             <div class="select is-fullwidth">
                                             <select v-model.number="form.package_id" @change="getPrice">
-                                                <option selected value="">Pilih Paket...</option>
+                                                <option selected value=0>Pilih Paket...</option>
                                                 <option value=1>Murah Meriah di Rumah</option>
                                                 <option value=2>Steam Biasa</option>
                                                 <option value=3>Steam + Interior Cleaning</option>
@@ -65,37 +65,50 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="columns" style="margin-bottom: 0px;">
-                                        <div class="column">
-                                            <div class="field">
-                                                <label class="label">Tanggal &amp; Jam</label>
+                                    <div class="field">
+                                        <label class="label">Tanggal &amp; Jam</label>
+                                        <div class="columns" style="margin-bottom: 0px;">
+                                            <div class="column" style="padding-bottom: 0px;">
+                                                    <div class="control">
+                                                        <datetime
+                                                            type="date"
+                                                            v-model="date"
+                                                            value-zone="Asia/Jakarta"
+                                                            :min-datetime="new Date(minDate.setDate(today.getDate() + 1)).toISOString()"
+                                                            :max-datetime="new Date(maxDate.setDate(minDate.getDate() + 7)).toISOString()">
+                                                        </datetime>
+                                                    </div>
+                                                </div>
+                                            <div class="column" style="padding-bottom: 0px;">
                                                 <div class="control">
-                                                    <datetime
-                                                        type="datetime"
-                                                        v-model="form.datetime"
-                                                        value-zone="Asia/Jakarta"
-                                                        :minute-step="30"
-                                                        :min-datetime="minDate.toISOString()"
-                                                        :max-datetime="new Date(maxDate.setDate(minDate.getDate() + 7)).toISOString()">
-                                                    </datetime>
+                                                    <div class="select is-fullwidth">
+                                                    <select v-model="form.datetime">
+                                                        <option selected :value="null">Jam Tersedia...</option>
+                                                        <option
+                                                            v-for="(data, index) in availableTime"
+                                                            :key="index"
+                                                            v-if="new Date(data).getDate() === new Date(date).getDate()"
+                                                            :value="data">
+                                                            {{ formatTimeString(new Date(data)) }}
+                                                        </option>
+                                                    </select>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="column">
-                                            <div class="field">
-                                                <label class="label">Tambahan</label>
-                                                <div class="columns">
-                                                    <div class="column">
-                                                        <label class="checkbox">
-                                                            <input type="checkbox" v-model="form.extra_water">&nbsp;Air
-                                                        </label>
-                                                    </div>
-                                                    <div class="column">
-                                                        <label class="checkbox">
-                                                            <input type="checkbox" v-model="form.extra_electricity">&nbsp;Listrik
-                                                        </label>
-                                                    </div>
-                                                </div>
+                                    </div>
+                                    <div class="field">
+                                        <label class="label">Tambahan</label>
+                                        <div class="columns">
+                                            <div class="column">
+                                                <label class="checkbox">
+                                                    <input type="checkbox" v-model="form.extra_water" @change="getPrice">&nbsp;Air
+                                                </label>
+                                            </div>
+                                            <div class="column">
+                                                <label class="checkbox">
+                                                    <input type="checkbox" v-model="form.extra_electricity" @change="getPrice">&nbsp;Listrik
+                                                </label>
                                             </div>
                                         </div>
                                     </div>
@@ -123,17 +136,30 @@ const axios = require('axios')
 
 export default {
   name: 'BookingForm',
+  created: async function () {
+        let url = 'https://formula-variasi.herokuapp.com/carcare/api/availabledatetime/'
+        await axios.get(url)
+        .then((response) => {
+            console.log(response)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+  },
   data() {
     return {
         isPriceLoading: false,
+        today: new Date(),
         minDate: new Date(),
         maxDate: new Date(),
+        availableTime: [],
+        date: null,
         form: {
             name: null,
             email: null,
             phone: null,
             address: null,
-            package_id: null,
+            package_id: 0,
             datetime: null,
             extra_water: false,
             extra_electricity: false,
@@ -143,22 +169,24 @@ export default {
   },
   methods: {
     processForm: function() {
-        axios.post('https://formula-variasi.herokuapp.com/carcare/api/booking/', JSON.stringify({
+        axios.post('https://formula-variasi.herokuapp.com/carcare/api/booking/', {
             name: this.form.name,
             email: this.form.email,
             phone: this.form.phone,
             address: this.form.address,
             package_id: this.form.package_id,
             datetime: this.form.datetime,
+            datetime: this.form.datetime,
             extra_water: this.form.extra_water,
             extra_electricity: this.form.extra_electricity,
             price: this.form.price
-        }))
+        })
         .then(function (response) {
-            console.log(response);
+            console.log(response)
         })
         .catch(function (error) {
-            console.log(error);
+            console.log(error)
+            console.log(error.response.data)
         });
     },
     formatPrice(value) {
@@ -169,7 +197,7 @@ export default {
         this.isPriceLoading = true
         console.log("this.form.price = " + this.form.price)
         console.log("this.form.package_id = " + this.form.package_id)
-        if (this.form.package_id === "" || !this.form.package_id) {
+        if (this.form.package_id === 0 || !this.form.package_id) {
             this.form.price = 0
         }
         else {
@@ -184,9 +212,50 @@ export default {
                 // handle error
                 console.log(error)
             })
+
+            if (this.form.extra_water) {
+                this.form.price += 5000
+            }
+
+            if (this.form.extra_electricity) {
+                this.form.price += 15000
+            }
         }
         this.isPriceLoading = false
         console.log(this.form.price)
+    },
+    getTime: async function () {
+        let url = 'https://formula-variasi.herokuapp.com/carcare/api/availabledatetime/'
+        await axios.get(url)
+        .then((response) => {
+            console.log(response)
+            this.availableTime = response.data
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+        console.log(this.availableTime)
+    },
+    formatTwoDigitString(n) {
+        return n > 9 ? "" + n : "0" + n;
+    },
+    formatTimeString(date) {
+        return this.formatTwoDigitString(date.getHours()) + ":" + this.formatTwoDigitString(date.getMinutes())
+    }
+  },
+  watch: {
+    date: function () {
+        this.getTime()
+        console.log(this.date)
+        console.log(new Date(this.date).getHours())
+        if (new Date(this.availableTime[4]).getDate() === new Date(this.date).getDate()) {
+            console.log('sama')
+        }
+        else {
+            console.log('beda')
+        }
+        console.log(new Date(this.availableTime[4]))
+        console.log(new Date(this.date))
     }
   }
 }
