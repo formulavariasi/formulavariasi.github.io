@@ -112,13 +112,26 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="field has-text-centered">
-                                        <span v-if="isPriceLoading" class="button is-loading is-success"><h5 class="title is-5 price-loading">Rp {{ formatPrice(0) }}</h5></span>
-                                        <span v-else class="button is-hovered is-success"><h5 class="title is-5 price">Rp {{ formatPrice(form.price) }}</h5></span>
+                                    <div class="field">
+                                        <label class="label">Harga Total</label>
+                                        <div v-if="isPriceLoading" class="button is-loading is-link"><h5 class="title is-5 price-loading">Rp {{ formatPrice(0) }}</h5></div>
+                                        <div v-else class="button is-hovered is-link"><h5 class="title is-5 price">Rp {{ formatPrice(form.price) }}</h5></div>
+                                    </div>
+                                    <div v-if="submitSuccess" class="notification is-success">
+                                        <strong>Booking Sukses!</strong><br>
+                                        Booking Anda telah diproses. Kami akan mengirimkan detail booking Anda melalui email.
+                                        Terimakasih telah mempercayakan perawatan mobil Anda kepada kami.<br>
+                                        <router-link to="/Home"><a>Klik di sini</a></router-link> untuk kembali ke halaman utama.
+                                    </div>
+                                    <div v-if="submitError" class="notification is-danger">
+                                        <strong>Booking Gagal!</strong><br>
+                                        Kami menemui suatu masalah ketika memproses booking Anda. Mohon coba lagi. Tolong periksa kembali isian form Anda. Mohon maaf atas ketidaknyamanan yang ditimbulkan.<br>
+                                        <router-link to="/Home"><a>Klik di sini</a></router-link> untuk kembali ke halaman utama.
                                     </div>
                                     <!-- submit button -->
                                     <div class="field has-text-right">
-                                        <button type="submit" class="button is-danger">Submit</button>
+                                        <span v-if="isSubmitting" class="button is-loading is-danger">Submit</span>
+                                        <button v-else type="submit" class="button is-danger">Submit</button>
                                     </div>
                                     </form>
                                 </div>
@@ -154,6 +167,9 @@ export default {
         maxDate: new Date(),
         availableTime: [],
         date: null,
+        isSubmitting: false,
+        submitSuccess: false,
+        submitError: false,
         form: {
             name: null,
             email: null,
@@ -168,8 +184,9 @@ export default {
     }
   },
   methods: {
-    processForm: function() {
-        axios.post('https://formula-variasi.herokuapp.com/carcare/api/booking/', {
+    processForm: async function() {
+        this.isSubmitting = true
+        await axios.post('https://formula-variasi.herokuapp.com/carcare/api/booking/', {
             name: this.form.name,
             email: this.form.email,
             phone: this.form.phone,
@@ -181,13 +198,18 @@ export default {
             extra_electricity: this.form.extra_electricity,
             price: this.form.price
         })
-        .then(function (response) {
+        .then((response) => {
             console.log(response)
+            this.submitSuccess = true
+            this.submitError = false
         })
-        .catch(function (error) {
+        .catch((error) => {
             console.log(error)
-            console.log(error.response.data)
+            this.submitSuccess = false
+            this.submitError = true
         });
+
+        this.isSubmitting = false
     },
     formatPrice(value) {
         let val = (value/1).toFixed(2).replace('.', ',')
