@@ -17,6 +17,7 @@
                                         <label class="label">Nama</label>
                                         <div class="control">
                                             <input type="text" class="input" name="name" placeholder="e.g. John Doe" v-model="form.name">
+                                            <!-- <div class="field-error-message" v-if="!$v.form.name.required">Nama tidak boleh kosong</div> -->
                                         </div>
                                     </div>
                                     <div class="columns" style="margin-bottom:0px">
@@ -26,6 +27,8 @@
                                                 <label class="label">Alamat Email</label>
                                                 <div class="control">
                                                     <input type="email" class="input" name="email" placeholder="e.g. john@mail.com" v-model="form.email">
+                                                    <!-- <div class="field-error-message" v-if="!$v.form.email.required">Alamat email tidak boleh kosong</div> -->
+                                                    <!-- <div class="field-error-message" v-if="!$v.form.email.email">Format alamat email salah</div> -->
                                                 </div>
                                             </div>
                                         </div>
@@ -35,6 +38,8 @@
                                                 <label class="label">Nomor Telepon</label>
                                                 <div class="control">
                                                     <input type="tel" class="input" name="phone" placeholder="e.g. 08123456789" v-model="form.phone">
+                                                    <!-- <div class="field-error-message" v-if="!$v.form.phone.required">Nomor telepon tidak boleh kosong</div> -->
+                                                    <!-- <div class="field-error-message" v-if="(!$v.form.phone.minLength) || (!$v.form.phone.maxLength)">Panjang nomor telepon harus antara 8 sampai 15 digit</div> -->
                                                 </div>
                                             </div>
                                         </div>
@@ -44,6 +49,7 @@
                                         <label class="label">Alamat</label>
                                         <div class="control">
                                             <textarea class="textarea" name="address" rows="3" v-model="form.address"></textarea>
+                                            <!-- <div class="field-error-message" v-if="!$v.form.address.required">Alamat tidak boleh kosong</div> -->
                                         </div>
                                     </div>
 
@@ -63,6 +69,7 @@
                                                 <option value=7>Ultimate Steam + Wax Machine + Interior Cleaning</option>
                                             </select>
                                             </div>
+                                            <!-- <div class="field-error-message" v-if="!$v.form.address.minValue">Harus memilih salah satu paket</div> -->
                                         </div>
                                     </div>
                                     <div class="field">
@@ -96,6 +103,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- <div class="field-error-message" v-if="!$v.form.datetime.required">Harus memilih jadwal yang disediakan</div> -->
                                     </div>
                                     <div class="field">
                                         <label class="label">Tambahan</label>
@@ -146,6 +154,7 @@
 
 <script>
 const axios = require('axios')
+import { required, email, numeric, minValue, minLength, maxLength } from 'vuelidate/lib/validators'
 
 export default {
   name: 'BookingForm',
@@ -183,33 +192,66 @@ export default {
         }
     }
   },
+  validations: {
+    form: {
+        name: {
+            required
+        },
+        email: {
+            required,
+            email
+        },
+        phone: {
+            required,
+            numeric,
+            minLength: minLength(8),
+            maxLength: maxLength(15)
+        },
+        address: {
+            required
+        },
+        package_id: {
+            required,
+            minValue: minValue(0)
+        },
+        datetime: {
+            required
+        }
+    }
+  },
   methods: {
     processForm: async function() {
-        this.isSubmitting = true
-        await axios.post('https://formula-variasi.herokuapp.com/carcare/api/booking/', {
-            name: this.form.name,
-            email: this.form.email,
-            phone: this.form.phone,
-            address: this.form.address,
-            package_id: this.form.package_id,
-            datetime: this.form.datetime,
-            datetime: this.form.datetime,
-            extra_water: this.form.extra_water,
-            extra_electricity: this.form.extra_electricity,
-            price: this.form.price
-        })
-        .then((response) => {
-            console.log(response)
-            this.submitSuccess = true
-            this.submitError = false
-        })
-        .catch((error) => {
-            console.log(error)
-            this.submitSuccess = false
-            this.submitError = true
-        });
+        // this.$v.form.$touch()
+        // if (this.$v.form.$invalid) {
+        //     console.log('invalid ber')
+        // }
+        // else {
+            this.isSubmitting = true
+            await axios.post('https://formula-variasi.herokuapp.com/carcare/api/booking/', {
+                name: this.form.name,
+                email: this.form.email,
+                phone: this.form.phone,
+                address: this.form.address,
+                package_id: this.form.package_id,
+                datetime: this.form.datetime,
+                datetime: this.form.datetime,
+                extra_water: this.form.extra_water,
+                extra_electricity: this.form.extra_electricity,
+                price: this.form.price
+            })
+            .then((response) => {
+                console.log(response)
+                this.submitSuccess = true
+                this.submitError = false
+            })
+            .catch((error) => {
+                console.log(error)
+                this.submitSuccess = false
+                this.submitError = true
+            });
 
-        this.isSubmitting = false
+            this.isSubmitting = false
+        // }
     },
     formatPrice(value) {
         let val = (value/1).toFixed(2).replace('.', ',')

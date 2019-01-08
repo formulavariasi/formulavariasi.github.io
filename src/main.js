@@ -1,6 +1,7 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
+import Vuelidate from 'vuelidate'
 import VueScrollTo from 'vue-scrollto'
 import Datetime from 'vue-datetime'
 // You need a specific loader for CSS files
@@ -18,6 +19,8 @@ library.add(faAngleDown)
 library.add(faAngleUp)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
+
+Vue.use(Vuelidate)
 Vue.use(VueScrollTo)
 Vue.use(Datetime)
 
