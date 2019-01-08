@@ -7,9 +7,14 @@
             <!-- <a class="navbar-item" href="https://bulma.io">
             <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
             </a> -->
+            <span class="navbar-burger burger" data-target="navbarMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
         </div>
 
-        <div id="navbarBasicExample" class="navbar-menu">
+        <div id="navbarMenu" class="navbar-menu">
             <div class="navbar-start">
             <router-link to="/Home" class="navbar-item">
                 Home
@@ -30,7 +35,6 @@
                 </div>
             </div>
             </div>
-
             <div class="navbar-end">
             <div class="navbar-item">
                 <div class="buttons">
@@ -57,6 +61,14 @@
 
 <script>
 export default {
+  mounted: async function () {
+    var burger = document.querySelector('.burger');
+    var menu = document.querySelector('#' + burger.dataset.target);
+    burger.addEventListener('click', function () {
+        burger.classList.toggle('is-active');
+        menu.classList.toggle('is-active');
+    });
+  },
   name: 'App'
 }
 </script>
